@@ -3,14 +3,23 @@ package com.tleu.wsjavathree.service.implementation;
 import com.tleu.wsjavathree.service.UserService;
 import com.tleu.wsjavathree.model.UserEntity;
 import com.tleu.wsjavathree.repository.UserRepository;
+import com.tleu.wsjavathree.shared.Utils;
 import com.tleu.wsjavathree.shared.dto.UserDto;
 import org.springframework.beans.BeanUtils;
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 @Service
 public class UserServiceImpl implements UserService {
 
     UserRepository userRepository;
+    @Autowired
+    Utils utils;
+    @Autowired
+    BCryptPasswordEncoder bCryptPasswordEncoder;
 
     public UserServiceImpl(UserRepository userRepository) {
         this.userRepository = userRepository;
@@ -23,11 +32,22 @@ public class UserServiceImpl implements UserService {
         }
         UserEntity userEntity = new UserEntity();
         BeanUtils.copyProperties(user, userEntity);
-        userEntity.setEncryptedPassword("test");
-        userEntity.setUserId("testUserId");
+        userEntity.setEncryptedPassword(bCryptPasswordEncoder.encode(user.getPassword()));
+        String publicUserId = utils.generateUserId(20);
+        userEntity.setUserId(publicUserId);
         UserEntity storedUserDetails = userRepository.save(userEntity);
         UserDto returnValue = new UserDto();
         BeanUtils.copyProperties(storedUserDetails,returnValue);
         return returnValue;
+    }
+
+    @Override
+    public UserDetails loadUserByUsername(String s) throws UsernameNotFoundException {
+        return null;
+    }
+
+    @Override
+    public UserDto getUserById(String id) {
+        return null;
     }
 }
